@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- [1] Security: only this site's own files may run, and the only outside address allowed is Google's Gemini API. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>VC4SL Content Engine</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/slides.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <a class="skip" href="#idea">Skip to the idea box</a>
+
+  <header class="top">
+    <div class="brand">
+      <span class="brand-name">VC4SL</span>
+      <span class="brand-sub">A personal project</span>
+    </div>
+    <button type="button" id="open-settings" class="btn btn-quiet">Settings</button>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="idea-label">
+      <label id="idea-label" for="idea" class="big-label">Dump your idea. Messy is fine.</label>
+      <textarea id="idea" rows="7" placeholder="e.g. my uncle got a fake courier SMS, clicked the link, and nearly lost his bank login. People think hackers are geniuses but mostly they just rely on us being in a hurry..."></textarea>
+
+      <div class="row">
+        <div class="field">
+          <label for="goal">Post goal</label>
+          <select id="goal">
+            <option>Educate</option>
+            <option>Story</option>
+            <option>Hot take</option>
+            <option>Announcement</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="audience">Audience</label>
+          <select id="audience">
+            <option>Non-technical public</option>
+            <option>Security peers</option>
+            <option>Recruiters &amp; leaders</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="generate" class="btn btn-primary">Generate</button>
+        <button type="button" id="demo" class="btn btn-secondary">Try demo (no key)</button>
+      </div>
+      <p class="hint">Nothing is posted anywhere. You review and copy everything yourself.</p>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+    <section id="results" class="results" hidden aria-label="Generated content">
+      <div class="tabs" role="tablist" aria-label="Output type">
+        <button type="button" role="tab" id="tab-linkedin" aria-controls="pane-linkedin" aria-selected="true">LinkedIn post</button>
+        <button type="button" role="tab" id="tab-carousel" aria-controls="pane-carousel" aria-selected="false" tabindex="-1">Instagram carousel</button>
+        <button type="button" role="tab" id="tab-caption" aria-controls="pane-caption" aria-selected="false" tabindex="-1">Caption</button>
+      </div>
+
+      <div id="pane-linkedin" role="tabpanel" aria-labelledby="tab-linkedin" class="pane">
+        <label for="linkedin-text" class="sr-only">LinkedIn post text</label>
+        <textarea id="linkedin-text" rows="16"></textarea>
+        <div class="pane-bar">
+          <span id="linkedin-count" class="count"></span>
+          <button type="button" class="btn btn-secondary" data-copy="linkedin-text">Copy post</button>
+        </div>
+      </div>
+
+      <div id="pane-carousel" role="tabpanel" aria-labelledby="tab-carousel" class="pane" hidden>
+        <div class="pane-bar">
+          <div class="theme-switch" role="group" aria-label="Slide theme" id="theme-switch"></div>
+          <button type="button" id="download-zip" class="btn btn-secondary">Download all as ZIP</button>
+        </div>
+        <p class="hint">Click any slide text to edit it. Text shrinks automatically to fit.</p>
+        <div id="slides" class="slides"></div>
+      </div>
+
+      <div id="pane-caption" role="tabpanel" aria-labelledby="tab-caption" class="pane" hidden>
+        <label for="caption-text" class="sr-only">Instagram caption</label>
+        <textarea id="caption-text" rows="8"></textarea>
+        <div class="pane-bar">
+          <span class="count" id="caption-count"></span>
+          <button type="button" class="btn btn-secondary" data-copy="caption-text">Copy caption</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Responsible use: you are responsible for reviewing everything before you post it, especially anything about vulnerabilities or CVEs. Do not paste confidential or employer-sensitive material.</p>
+  </footer>
+
+  <dialog id="settings" aria-labelledby="settings-title">
+    <form method="dialog" class="settings-form" id="settings-form">
+      <h2 id="settings-title">Settings</h2>
+      <p class="warn" role="note">Your key stays in this browser only. Never share it or commit it to GitHub.</p>
+
+      <label for="api-key">Gemini API key</label>
+      <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your free key from aistudio.google.com">
+
+      <label for="model">Model name</label>
+      <input id="model" type="text" autocomplete="off" spellcheck="false">
+
+      <label for="samples">Voice samples (paste 3 to 5 of your best past posts, separated by a blank line)</label>
+      <textarea id="samples" rows="9" placeholder="Paste your own posts here. The AI copies your tone, not your facts."></textarea>
+
+      <div class="actions">
+        <button type="submit" id="save-settings" class="btn btn-primary" value="save">Save</button>
+        <button type="button" id="clear-key" class="btn btn-secondary">Clear key</button>
+        <button type="submit" class="btn btn-quiet" value="close">Close</button>
+      </div>
+      <p id="settings-msg" class="hint" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <script src="vendor/html-to-image.js"></script>
+  <script src="vendor/jszip.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

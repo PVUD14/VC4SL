@@ -1,0 +1,133 @@
+/* app.css - the look of the app itself (not the slides). */
+
+/* [1] Colours and fonts. Change these to restyle the whole app. */
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --ink: #16181d;
+  --ink-soft: #565b66;
+  --line: #dcd9d0;
+  --accent: #1f3a5f;
+  --accent-ink: #ffffff;
+  --danger: #8f2d1f;
+  --danger-bg: #fbeeea;
+  --focus: #b4530a;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.55 var(--font);
+}
+
+/* [2] Visible focus for keyboard users. */
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.skip {
+  position: absolute; left: 8px; top: -60px; background: var(--ink); color: #fff;
+  padding: 8px 14px; border-radius: 6px; z-index: 10;
+}
+.skip:focus { top: 8px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.top {
+  display: flex; justify-content: space-between; align-items: center;
+  max-width: 1100px; margin: 0 auto; padding: 22px 20px 8px;
+}
+.brand { display: flex; flex-direction: column; }
+.brand-name { font-weight: 800; font-size: 22px; letter-spacing: 0.14em; }
+.brand-sub { color: var(--ink-soft); font-size: 14px; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 12px 20px 40px; }
+
+.panel, .results {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px;
+}
+.results { margin-top: 24px; }
+
+.big-label { display: block; font-size: 24px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.01em; }
+
+textarea, input[type="text"], input[type="password"], select {
+  width: 100%; font: inherit; color: var(--ink); background: #fff;
+  border: 1px solid #b9b5aa; border-radius: 10px; padding: 12px 14px;
+}
+textarea { resize: vertical; line-height: 1.6; }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.field label, .settings-form label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.settings-form label { margin-top: 16px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.hint { color: var(--ink-soft); font-size: 14px; margin: 12px 0 0; }
+
+.btn {
+  font: inherit; font-weight: 600; border-radius: 10px; padding: 12px 20px; cursor: pointer;
+  border: 1px solid transparent; min-height: 44px;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { background: #162b47; }
+.btn-secondary { background: #fff; color: var(--ink); border-color: #8d8a80; }
+.btn-secondary:hover { background: #f0eee7; }
+.btn-quiet { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn[disabled] { opacity: 0.55; cursor: progress; }
+
+/* [3] Status box: used for loading and errors. */
+.status {
+  margin-top: 20px; padding: 16px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+}
+.status.is-error { background: var(--danger-bg); border-color: #e2b5aa; color: var(--danger); }
+.status.is-loading::before {
+  content: ""; width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .status.is-loading::before { animation: none; } }
+
+/* [4] Tabs. */
+.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 18px; overflow-x: auto; }
+.tabs [role="tab"] {
+  font: inherit; font-weight: 600; background: none; border: 0; border-bottom: 3px solid transparent;
+  padding: 12px 16px; cursor: pointer; color: var(--ink-soft); white-space: nowrap;
+}
+.tabs [aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+.pane-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; }
+.count { color: var(--ink-soft); font-size: 14px; }
+.count.over { color: var(--danger); font-weight: 700; }
+
+.theme-switch { display: flex; flex-wrap: wrap; gap: 8px; }
+.theme-switch button {
+  font: inherit; font-weight: 600; border: 1px solid #8d8a80; background: #fff; border-radius: 999px;
+  padding: 8px 16px; cursor: pointer; min-height: 40px;
+}
+.theme-switch button[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* [5] Slide previews: each frame is a scaled-down copy of the full 1080x1350 slide. */
+.slides { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; margin-top: 16px; }
+.slide-card { display: flex; flex-direction: column; gap: 10px; }
+.slide-frame { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 6px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+.slide-frame .slide { position: absolute; left: 0; top: 0; transform-origin: top left; }
+
+.settings-form .warn {
+  background: #fff4dd; border: 1px solid #e3c783; border-radius: 10px; padding: 12px 14px; margin: 0; font-weight: 600;
+}
+
+dialog { width: min(640px, calc(100vw - 24px)); border: 1px solid var(--line); border-radius: 14px; padding: 24px; background: var(--surface); color: var(--ink); }
+dialog::backdrop { background: rgba(22, 24, 29, 0.5); }
+dialog h2 { margin: 0 0 12px; }
+
+.foot { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; color: var(--ink-soft); font-size: 14px; }
+
+@media (max-width: 600px) {
+  .row { grid-template-columns: 1fr; }
+  .panel, .results { padding: 16px; }
+  .big-label { font-size: 20px; }
+}

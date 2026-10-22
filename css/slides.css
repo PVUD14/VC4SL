@@ -1,0 +1,69 @@
+/* slides.css - the three slide themes. Every slide is exactly 1080 x 1350 pixels.
+   Text sizes below are multiplied by --fit, which render.js lowers when text is too long. */
+
+/* [1] Off-screen area used while exporting PNGs. Never visible. */
+.export-stage { position: fixed; left: -20000px; top: 0; width: 1080px; height: 1350px; pointer-events: none; }
+
+/* [2] Shared layout for all themes. */
+.slide {
+  --fit: 1;
+  display: flex; flex-direction: column; padding: 96px 90px 80px; overflow: hidden;
+  box-sizing: border-box; position: relative;
+}
+.slide * { box-sizing: border-box; }
+.slide-top { display: flex; align-items: center; gap: 28px; flex: none; height: 48px; }
+.slide-rule { flex: 1; height: 2px; background: currentColor; opacity: 0.35; }
+.slide-count { font-size: 30px; letter-spacing: 0.12em; font-variant-numeric: tabular-nums; }
+
+.slide-main { flex: 1; min-height: 0; overflow: hidden; display: flex; align-items: center; margin: 56px 0; }
+.slide-content { width: 100%; }
+.slide-heading, .slide-body { margin: 0; overflow-wrap: anywhere; outline-offset: 10px; }
+.slide-body { margin-top: 0.7em; }
+.slide-body:empty { display: none; }
+.slide-heading[contenteditable]:focus, .slide-body[contenteditable]:focus { outline: 4px dashed currentColor; }
+
+.slide-footer { display: flex; justify-content: space-between; align-items: center; flex: none; font-size: 30px; letter-spacing: 0.06em; }
+.slide-mark { font-size: 26px; letter-spacing: 0.2em; }
+
+.slide-first .slide-heading { font-size: calc(124px * var(--fit)); }
+.slide-middle .slide-heading { font-size: calc(80px * var(--fit)); }
+.slide-last .slide-heading { font-size: calc(92px * var(--fit)); }
+.slide-body { font-size: calc(46px * var(--fit)); }
+
+/* [3] Theme 1: dark editorial. Serif headlines, warm off-white on near-black, brass accent. */
+.theme-editorial { background: #0e0f12; color: #f2efe8; font-family: Georgia, "Times New Roman", serif; }
+.theme-editorial .slide-count, .theme-editorial .slide-footer { font-family: "Courier New", ui-monospace, monospace; color: #c9a86a; }
+.theme-editorial .slide-rule { background: #c9a86a; opacity: 0.6; }
+.theme-editorial .slide-heading { font-weight: 700; line-height: 1.08; letter-spacing: -0.015em; }
+.theme-editorial .slide-body { font-family: system-ui, "Segoe UI", Arial, sans-serif; line-height: 1.42; color: #d8d4ca; }
+.theme-editorial.slide-first .slide-main { align-items: flex-end; }
+.theme-editorial.slide-first .slide-heading { border-left: 10px solid #c9a86a; padding-left: 44px; }
+.theme-editorial.slide-last { background: #c9a86a; color: #0e0f12; }
+.theme-editorial.slide-last .slide-count, .theme-editorial.slide-last .slide-footer { color: #0e0f12; }
+.theme-editorial.slide-last .slide-rule { background: #0e0f12; }
+.theme-editorial.slide-last .slide-body { color: #26231c; }
+
+/* [4] Theme 2: light minimal. Quiet sans-serif, lots of air, one navy accent. */
+.theme-minimal { background: #f7f6f2; color: #14161a; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.theme-minimal .slide-count, .theme-minimal .slide-footer { color: #5b6270; }
+.theme-minimal .slide-rule { background: #14161a; opacity: 0.18; height: 2px; }
+.theme-minimal .slide-heading { font-weight: 600; line-height: 1.12; letter-spacing: -0.03em; }
+.theme-minimal .slide-body { line-height: 1.45; color: #3d424d; font-weight: 400; }
+.theme-minimal.slide-first .slide-main { align-items: center; }
+.theme-minimal.slide-first .slide-heading { font-weight: 300; letter-spacing: -0.045em; line-height: 1.02; }
+.theme-minimal.slide-middle .slide-heading { color: #1f3a5f; }
+.theme-minimal.slide-last { background: #1f3a5f; color: #f7f6f2; }
+.theme-minimal.slide-last .slide-count, .theme-minimal.slide-last .slide-footer, .theme-minimal.slide-last .slide-body { color: #cfd8e6; }
+.theme-minimal.slide-last .slide-rule { background: #f7f6f2; }
+
+/* [5] Theme 3: bold high-contrast. Heavy uppercase type, signal yellow and black, thick frame. */
+.theme-bold { background: #ffdd1f; color: #000; font-family: "Arial Black", Impact, "Helvetica Neue", Arial, sans-serif; border: 22px solid #000; }
+.theme-bold .slide-count { background: #000; color: #ffdd1f; padding: 6px 20px; letter-spacing: 0.08em; }
+.theme-bold .slide-rule { height: 10px; opacity: 1; background: #000; }
+.theme-bold .slide-heading { font-weight: 900; text-transform: uppercase; line-height: 1; letter-spacing: -0.02em; }
+.theme-bold .slide-body { font-family: system-ui, "Segoe UI", Arial, sans-serif; font-weight: 700; line-height: 1.3; }
+.theme-bold .slide-footer { font-family: system-ui, "Segoe UI", Arial, sans-serif; font-weight: 800; }
+.theme-bold.slide-first .slide-main { align-items: flex-start; }
+.theme-bold.slide-last { background: #000; color: #ffdd1f; border-color: #ffdd1f; }
+.theme-bold.slide-last .slide-count { background: #ffdd1f; color: #000; }
+.theme-bold.slide-last .slide-rule { background: #ffdd1f; }
