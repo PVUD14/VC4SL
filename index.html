@@ -8,154 +8,199 @@
   <title>VC4SL Content Engine</title>
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/slides.css">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314120F'/%3E%3Crect x='7' y='7' width='8' height='8' fill='%23C8371D'/%3E%3Crect x='7' y='17' width='18' height='3' fill='%23F2EEE4'/%3E%3Crect x='7' y='22' width='12' height='3' fill='%23F2EEE4'/%3E%3C/svg%3E">
 </head>
 <body>
   <a class="skip" href="#idea">Skip to the idea box</a>
 
-  <header class="top">
-    <div class="brand">
-      <span class="brand-name">VC4SL</span>
-      <span class="brand-sub">A personal project</span>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <span class="brand-name">VC4SL</span>
+          <span class="brand-sub">Voicechat Creator for Social Life</span>
+        </div>
+      </div>
+      <nav class="top-actions" aria-label="Main">
+        <button type="button" id="open-keys" class="navlink">API keys</button>
+        <button type="button" id="open-settings" class="navlink">Voice samples</button>
+      </nav>
     </div>
-    <nav class="top-actions" aria-label="Main">
-      <button type="button" id="open-keys" class="btn btn-quiet">API keys</button>
-      <button type="button" id="open-settings" class="btn btn-quiet">Voice samples</button>
-    </nav>
   </header>
 
-  <main id="screen-keys" hidden>
-    <section class="panel" aria-labelledby="keys-title">
-      <h1 id="keys-title" class="big-label">Set up your API keys</h1>
-      <p class="warn" role="note">Your keys stay in this browser only. Never share them or commit them to GitHub.</p>
-      <p class="hint">Each card shows what a key is used for. Token counts at the bottom are measured by this app from the AI's replies in this browser. They are estimates, not Google's official quota figures.</p>
-      <div id="key-cards" class="key-cards"></div>
-      <div class="actions">
-        <button type="button" id="keys-continue" class="btn btn-primary">Continue</button>
-        <button type="button" id="keys-demo" class="btn btn-secondary">Try demo (no key)</button>
-      </div>
-      <p id="keys-continue-hint" class="hint" aria-live="polite"></p>
+  <main id="screen-keys" class="screen" hidden>
+    <section class="hero" aria-labelledby="keys-title">
+      <p class="kicker">Step 1 of 2</p>
+      <h1 id="keys-title" class="display">Connect your <em>AI</em>.</h1>
+      <p class="lede">Bring your own key from the provider you like. It is stored in this browser only, and it is used for one job: writing your post, slide text and caption.</p>
     </section>
+
+    <div id="key-cards" class="key-layout"></div>
+
+    <div class="screen-actions">
+      <button type="button" id="keys-continue" class="btn btn-primary btn-lg">Continue <span aria-hidden="true">&rarr;</span></button>
+      <button type="button" id="keys-demo" class="btn btn-ghost btn-lg">Try the demo, no key</button>
+      <p id="keys-continue-hint" class="hint" aria-live="polite"></p>
+    </div>
+    <p class="fineprint">Token counts in the bar below are added up by this app from each provider's replies. They are estimates, not official quota figures.</p>
   </main>
 
-  <main id="screen-app" hidden>
-    <section class="panel" aria-labelledby="idea-label">
-      <label id="idea-label" for="idea" class="big-label">Dump your idea. Messy is fine.</label>
-      <textarea id="idea" rows="7" placeholder="e.g. my uncle got a fake courier SMS, clicked the link, and nearly lost his bank login. People think hackers are geniuses but mostly they just rely on us being in a hurry..."></textarea>
-
-      <div class="row">
-        <div class="field">
-          <label for="goal">Post goal</label>
-          <select id="goal">
-            <option>Educate</option>
-            <option>Story</option>
-            <option>Hot take</option>
-            <option>Announcement</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="audience">Audience</label>
-          <select id="audience">
-            <option>Non-technical public</option>
-            <option>Security peers</option>
-            <option>Recruiters &amp; leaders</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button type="button" id="generate" class="btn btn-primary">Generate</button>
-        <button type="button" id="demo" class="btn btn-secondary">Try demo (no key)</button>
-      </div>
-      <p class="hint">Nothing is posted anywhere. You review and copy everything yourself.</p>
+  <main id="screen-app" class="screen" hidden>
+    <section class="hero" aria-labelledby="app-title">
+      <p class="kicker">Step 2 of 2</p>
+      <h1 id="app-title" class="display">Say it messy.<br><em>Post it sharp.</em></h1>
+      <p class="lede">Drop in a rough thought. Get a LinkedIn post, an Instagram carousel, a caption, and a video you can download.</p>
     </section>
+
+    <div class="composer-layout">
+      <section class="composer" aria-labelledby="idea-label">
+        <label id="idea-label" for="idea" class="composer-label">Dump your idea. Messy is fine.</label>
+        <textarea id="idea" rows="8" placeholder="e.g. my uncle got a fake courier SMS, clicked the link, and nearly lost his bank login. People think hackers are geniuses but mostly they just rely on us being in a hurry..."></textarea>
+        <p class="composer-count" id="idea-count">0 words</p>
+
+        <div class="choices">
+          <fieldset class="segmented" id="goal-group">
+            <legend>Post goal</legend>
+            <label><input type="radio" name="goal" value="Educate" checked><span>Educate</span></label>
+            <label><input type="radio" name="goal" value="Story"><span>Story</span></label>
+            <label><input type="radio" name="goal" value="Hot take"><span>Hot take</span></label>
+            <label><input type="radio" name="goal" value="Announcement"><span>Announcement</span></label>
+          </fieldset>
+          <fieldset class="segmented" id="audience-group">
+            <legend>Audience</legend>
+            <label><input type="radio" name="audience" value="Non-technical public" checked><span>Non-technical public</span></label>
+            <label><input type="radio" name="audience" value="Security peers"><span>Security peers</span></label>
+            <label><input type="radio" name="audience" value="Recruiters &amp; leaders"><span>Recruiters &amp; leaders</span></label>
+          </fieldset>
+        </div>
+
+        <div class="screen-actions">
+          <button type="button" id="generate" class="btn btn-primary btn-lg">Generate</button>
+          <button type="button" id="demo" class="btn btn-ghost btn-lg">Try demo</button>
+        </div>
+      </section>
+
+      <aside class="tips" aria-label="Tips">
+        <h2>A good dump has</h2>
+        <ol>
+          <li><strong>A real moment.</strong> Something that happened, even half-remembered.</li>
+          <li><strong>One lesson.</strong> The single thing you want people to remember.</li>
+          <li><strong>A reader.</strong> Who this is for, in your mind.</li>
+        </ol>
+        <p class="tips-note">Leave out client names, employer details and unreleased vulnerability information. Nothing is posted for you. You review and copy everything yourself.</p>
+      </aside>
+    </div>
 
     <div id="status" class="status" role="status" aria-live="polite" hidden></div>
 
-    <section id="results" class="results" hidden aria-label="Generated content">
-      <div class="tabs" role="tablist" aria-label="Output type">
-        <button type="button" role="tab" id="tab-linkedin" aria-controls="pane-linkedin" aria-selected="true">LinkedIn post</button>
-        <button type="button" role="tab" id="tab-carousel" aria-controls="pane-carousel" aria-selected="false" tabindex="-1">Instagram carousel</button>
-        <button type="button" role="tab" id="tab-video" aria-controls="pane-video" aria-selected="false" tabindex="-1">Video (MP4)</button>
-        <button type="button" role="tab" id="tab-caption" aria-controls="pane-caption" aria-selected="false" tabindex="-1">Caption</button>
+    <section id="results" class="studio" hidden aria-label="Generated content">
+      <div class="studio-head">
+        <p class="kicker kicker-light">Your content</p>
+        <div class="tabs" role="tablist" aria-label="Output type">
+          <button type="button" role="tab" id="tab-linkedin" aria-controls="pane-linkedin" aria-selected="true">LinkedIn post</button>
+          <button type="button" role="tab" id="tab-carousel" aria-controls="pane-carousel" aria-selected="false" tabindex="-1">Instagram carousel</button>
+          <button type="button" role="tab" id="tab-video" aria-controls="pane-video" aria-selected="false" tabindex="-1">Video (MP4)</button>
+          <button type="button" role="tab" id="tab-caption" aria-controls="pane-caption" aria-selected="false" tabindex="-1">Caption</button>
+        </div>
       </div>
 
-      <div id="theme-bar" class="pane-bar theme-bar" hidden>
-        <span class="count" id="theme-label">Slide theme</span>
+      <div id="theme-bar" class="theme-bar" hidden>
+        <span class="theme-label" id="theme-label">Slide theme</span>
         <div class="theme-switch" role="group" aria-labelledby="theme-label" id="theme-switch"></div>
       </div>
 
       <div id="pane-linkedin" role="tabpanel" aria-labelledby="tab-linkedin" class="pane">
-        <label for="linkedin-text" class="sr-only">LinkedIn post text</label>
-        <textarea id="linkedin-text" rows="16"></textarea>
-        <div class="pane-bar">
-          <span id="linkedin-count" class="count"></span>
-          <button type="button" class="btn btn-secondary" data-copy="linkedin-text">Copy post</button>
+        <div class="postcard">
+          <div class="postcard-head">
+            <span class="avatar" id="avatar" aria-hidden="true"></span>
+            <div>
+              <strong id="post-author">You</strong>
+              <span class="postcard-sub">Draft preview. Click the text to edit.</span>
+            </div>
+          </div>
+          <label for="linkedin-text" class="sr-only">LinkedIn post text</label>
+          <textarea id="linkedin-text" rows="14"></textarea>
+          <div class="postcard-foot">
+            <span id="linkedin-count" class="count"></span>
+            <button type="button" class="btn btn-primary" data-copy="linkedin-text">Copy post</button>
+          </div>
         </div>
       </div>
 
       <div id="pane-carousel" role="tabpanel" aria-labelledby="tab-carousel" class="pane" hidden>
         <div class="pane-bar">
-          <p class="hint">Click any slide text to edit it. Text shrinks automatically to fit.</p>
-          <button type="button" id="download-zip" class="btn btn-secondary">Download all as ZIP</button>
+          <p class="pane-note">Click any slide text to edit it. Text shrinks automatically to fit.</p>
+          <button type="button" id="download-zip" class="btn btn-light">Download all as ZIP</button>
         </div>
         <div id="slides" class="slides"></div>
       </div>
 
       <div id="pane-video" role="tabpanel" aria-labelledby="tab-video" class="pane" hidden>
-        <p class="hint">Turns your slides (with any edits and the theme chosen above) into an MP4 you can upload straight to Instagram or LinkedIn. It is made on your computer and has no sound.</p>
-        <div class="pane-bar">
-          <div class="field">
-            <label for="video-format">Video shape</label>
-            <select id="video-format"></select>
+        <div class="video-layout">
+          <div class="video-controls">
+            <h2 class="pane-title">Turn the slides into a video</h2>
+            <p class="pane-note">Uses your edited slides and the theme chosen above. It is made on your computer, ready to upload to Instagram or LinkedIn. It has no sound.</p>
+            <div class="field">
+              <label for="video-format">Video shape</label>
+              <select id="video-format"></select>
+            </div>
+            <button type="button" id="make-video" class="btn btn-primary btn-lg">Create video</button>
+            <div id="video-progress" class="progress" hidden>
+              <progress id="video-bar" max="100" value="0" aria-label="Video progress"></progress>
+              <span id="video-pct" class="count">0%</span>
+            </div>
+            <p id="video-msg" class="pane-note" role="status" aria-live="polite"></p>
           </div>
-          <button type="button" id="make-video" class="btn btn-primary">Create video</button>
-        </div>
-        <div id="video-progress" class="progress" hidden>
-          <progress id="video-bar" max="100" value="0" aria-label="Video progress"></progress>
-          <span id="video-pct" class="count">0%</span>
-        </div>
-        <p id="video-msg" class="hint" role="status" aria-live="polite"></p>
-        <div id="video-result" class="video-result" hidden>
-          <video id="video-player" controls playsinline loop></video>
-          <button type="button" id="download-video" class="btn btn-primary">Download MP4</button>
+          <div id="video-result" class="video-result" hidden>
+            <div class="phone"><video id="video-player" controls playsinline loop></video></div>
+            <button type="button" id="download-video" class="btn btn-primary">Download MP4</button>
+          </div>
         </div>
       </div>
 
       <div id="pane-caption" role="tabpanel" aria-labelledby="tab-caption" class="pane" hidden>
-        <label for="caption-text" class="sr-only">Instagram caption</label>
-        <textarea id="caption-text" rows="8"></textarea>
-        <div class="pane-bar">
-          <span class="count" id="caption-count"></span>
-          <button type="button" class="btn btn-secondary" data-copy="caption-text">Copy caption</button>
+        <div class="postcard">
+          <div class="postcard-head">
+            <span class="avatar avatar-ig" aria-hidden="true"></span>
+            <div>
+              <strong>Instagram caption</strong>
+              <span class="postcard-sub">With hashtags. Click the text to edit.</span>
+            </div>
+          </div>
+          <label for="caption-text" class="sr-only">Instagram caption</label>
+          <textarea id="caption-text" rows="8"></textarea>
+          <div class="postcard-foot">
+            <span class="count" id="caption-count"></span>
+            <button type="button" class="btn btn-primary" data-copy="caption-text">Copy caption</button>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="foot">
-    <p>Responsible use: you are responsible for reviewing everything before you post it, especially anything about vulnerabilities or CVEs. Do not paste confidential or employer-sensitive material.</p>
+    <p><strong>Responsible use.</strong> You are responsible for reviewing everything before you post it, especially anything about vulnerabilities or CVEs. Do not paste confidential or employer-sensitive material.</p>
   </footer>
 
   <dialog id="settings" aria-labelledby="settings-title">
     <form method="dialog" class="settings-form" id="settings-form">
-      <h2 id="settings-title">Voice samples</h2>
-
-      <label for="samples">Voice samples (paste 3 to 5 of your best past posts, separated by a blank line)</label>
+      <p class="kicker">Style</p>
+      <h2 id="settings-title" class="dialog-title">Voice samples</h2>
+      <label for="samples">Paste 3 to 5 of your best past posts, separated by a blank line.</label>
       <textarea id="samples" rows="9" placeholder="Paste your own posts here. The AI copies your tone, not your facts."></textarea>
-
-      <div class="actions">
+      <div class="screen-actions">
         <button type="submit" id="save-settings" class="btn btn-primary" value="save">Save</button>
-        <button type="submit" class="btn btn-quiet" value="close">Close</button>
+        <button type="submit" class="btn btn-ghost" value="close">Close</button>
       </div>
       <p id="settings-msg" class="hint" role="status" aria-live="polite"></p>
     </form>
   </dialog>
 
   <aside id="usage-bar" class="usage-bar" aria-label="Tokens used per API key">
-    <span class="usage-title">Tokens used</span>
+    <span class="usage-title">Tokens</span>
     <ul id="usage-list" class="usage-list"></ul>
-    <button type="button" id="reset-usage" class="btn btn-quiet usage-reset">Reset counts</button>
+    <button type="button" id="reset-usage" class="usage-reset">Reset counts</button>
   </aside>
 
   <script src="vendor/html-to-image.js"></script>

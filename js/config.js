@@ -117,7 +117,7 @@ export const KEY_CATEGORIES = [
 ];
 
 // [21] AI PROVIDERS people can choose from on the API keys screen. Each person uses their OWN key.
-//      id: short internal name (do not change). label: name shown on screen.
+//      id: short internal name (do not change). label: name shown on screen. mark: two letters on its tile.
 //      kind: how the app talks to it. "gemini", "openai" (the common format also used by Groq,
 //            OpenRouter and local servers) or "anthropic".
 //      baseUrl: the service address. defaultModel: used when the key's Model box is left empty.
@@ -130,6 +130,7 @@ export const KEY_CATEGORIES = [
 export const PROVIDERS = [
   {
     id: "gemini",
+    mark: "Ge", // two letters shown in the provider tile
     label: "Google Gemini",
     kind: "gemini",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/models/",
@@ -140,6 +141,7 @@ export const PROVIDERS = [
   },
   {
     id: "groq",
+    mark: "Gq", // two letters shown in the provider tile
     label: "Groq",
     kind: "openai",
     baseUrl: "https://api.groq.com/openai/v1",
@@ -150,6 +152,7 @@ export const PROVIDERS = [
   },
   {
     id: "openrouter",
+    mark: "OR", // two letters shown in the provider tile
     label: "OpenRouter",
     kind: "openai",
     baseUrl: "https://openrouter.ai/api/v1",
@@ -160,6 +163,7 @@ export const PROVIDERS = [
   },
   {
     id: "openai",
+    mark: "AI", // two letters shown in the provider tile
     label: "OpenAI",
     kind: "openai",
     baseUrl: "https://api.openai.com/v1",
@@ -170,6 +174,7 @@ export const PROVIDERS = [
   },
   {
     id: "anthropic",
+    mark: "An", // two letters shown in the provider tile
     label: "Anthropic Claude",
     kind: "anthropic",
     baseUrl: "https://api.anthropic.com/v1",
@@ -180,13 +185,14 @@ export const PROVIDERS = [
   },
   {
     id: "local",
+    mark: "Lo", // two letters shown in the provider tile
     label: "Local server (Ollama, LM Studio)",
     kind: "openai",
     baseUrl: "http://localhost:11434/v1", // [21c] Ollama's usual address. LM Studio usually uses port 1234.
     defaultModel: "",
     keyRequired: false,
     askBaseUrl: true, // [21d] Shows an "Address" box so you can change the port.
-    cost: "Free. Runs on your computer and needs a downloaded model",
+    cost: "Free, runs on your computer",
     keyUrl: "https://ollama.com/download",
   },
 ];

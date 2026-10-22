@@ -44,48 +44,83 @@ export function trackUsage(keyId, tokens) {
 
 const fmt = (n) => Number(n).toLocaleString("en-US");
 
-// [4] Build every category card. Called again after any change.
+// [4] Build the screen: the key-taking cards on the left, explanations on the right.
 export function renderDashboard() {
-  $("key-cards").replaceChildren(...KEY_CATEGORIES.map(buildCard));
+  const main = KEY_CATEGORIES.filter((c) => c.needsKey).map(buildKeyCard);
+  const side = make("div", "key-side");
+  KEY_CATEGORIES.filter((c) => !c.needsKey).forEach((c) => side.append(buildInfoCard(c)));
+  side.append(buildTrustCard());
+  const column = make("div", "key-main");
+  column.append(...main);
+  $("key-cards").replaceChildren(column, side);
   const ready = KEY_CATEGORIES.filter((c) => c.needsKey).every((c) => listKeys(c.id).length > 0);
   $("keys-continue").disabled = !ready;
   $("keys-continue-hint").textContent = ready ? "" : "Add at least one key to continue, or try the demo.";
 }
 
-function buildCard(category) {
-  const card = make("section", "key-card");
+// [4a] A category that needs no key: just an explanation.
+function buildInfoCard(category) {
+  const card = make("section", "key-card key-card-info");
   card.setAttribute("aria-labelledby", `cat-${category.id}`);
   const head = make("div", "key-card-head");
   const title = make("h2", "", category.title);
   title.id = `cat-${category.id}`;
-  head.append(title, make("span", category.needsKey ? "badge badge-need" : "badge", category.needsKey ? "Key needed" : "No key needed"));
+  head.append(title, make("span", "badge", "No key needed"));
   card.append(head, make("p", "", category.usedFor), make("p", "hint", category.notUsed));
-  if (!category.needsKey) return card;
-
-  card.append(make("p", "hint", category.multiKeyNote));
-  const keys = listKeys(category.id);
-  const list = make("ul", "key-list");
-  if (keys.length === 0) list.append(make("li", "key-empty", "No keys saved yet."));
-  keys.forEach((entry, index) => list.append(buildKeyRow(entry, index, keys.length)));
-  card.append(list, buildAddForm(category));
   return card;
 }
 
-// [5] One saved key: name, provider, masked value, model, and Test / Remove / order buttons.
+// [4b] A short note on how keys are handled, to build trust.
+function buildTrustCard() {
+  const card = make("section", "trust");
+  card.setAttribute("aria-labelledby", "trust-title");
+  const title = make("h2", "", "How your keys are handled");
+  title.id = "trust-title";
+  const list = make("ul");
+  [
+    "Stored only in this browser, on this computer.",
+    "Sent only to the provider you pick, never to anyone else.",
+    "Shown as the last four characters, never logged, never put in a web address.",
+    "You can remove a key at any time.",
+  ].forEach((line) => list.append(make("li", "", line)));
+  card.append(title, list);
+  return card;
+}
+
+// [4c] A category that takes keys: title, saved keys, and the add form.
+function buildKeyCard(category) {
+  const card = make("section", "key-card key-card-main");
+  card.setAttribute("aria-labelledby", `cat-${category.id}`);
+  const head = make("div", "key-card-head");
+  const title = make("h2", "", category.title);
+  title.id = `cat-${category.id}`;
+  head.append(title, make("span", "badge badge-need", "Key needed"));
+  card.append(head, make("p", "", category.usedFor), make("p", "hint", category.notUsed), make("p", "hint", category.multiKeyNote));
+
+  const keys = listKeys(category.id);
+  card.append(make("p", "key-sub", "Your keys, tried in this order"));
+  const list = make("ul", "key-list");
+  if (keys.length === 0) list.append(make("li", "key-empty", "No keys saved yet."));
+  keys.forEach((entry, index) => list.append(buildKeyRow(entry, index, keys.length)));
+  card.append(list, make("p", "key-sub", "Add a key"), buildAddForm(category));
+  return card;
+}
+
+// [5] One saved key: its rank, name, provider, masked value, and Test / order / Remove buttons.
 function buildKeyRow(entry, index, count) {
   const provider = getProvider(entry.provider);
   const row = make("li", "key-row");
-  const info = make("div", "key-info");
   const usage = getUsage(entry.id);
+  const info = make("div", "key-info");
   info.append(
-    make("strong", "", `${index + 1}. ${entry.label}`),
-    make("span", "key-mask", `${provider.label} · ${maskKey(entry.key)}`),
+    make("strong", "", entry.label), " ",
+    make("span", "key-mask", `${provider.label} · ${maskKey(entry.key)}`), " ",
     make("span", "hint", `Model: ${entry.model || provider.defaultModel} · ${fmt(usage.total)} tokens used`),
   );
   const message = make("span", "key-msg");
   message.setAttribute("role", "status");
   message.setAttribute("aria-live", "polite");
-  const testButton = button("Test", "btn-secondary", async () => {
+  const testButton = button("Test", "btn-ghost", async () => {
     testButton.disabled = true;
     testButton.textContent = "Testing...";
     message.textContent = "";
@@ -98,13 +133,13 @@ function buildKeyRow(entry, index, count) {
     testButton.disabled = false;
     testButton.textContent = "Test";
   });
-  const upButton = button("↑", "btn-quiet", () => reorder(entry.id, -1));
-  const downButton = button("↓", "btn-quiet", () => reorder(entry.id, 1));
+  const upButton = button("↑", "btn-ghost", () => reorder(entry.id, -1));
+  const downButton = button("↓", "btn-ghost", () => reorder(entry.id, 1));
   upButton.disabled = index === 0;
   downButton.disabled = index === count - 1;
   upButton.setAttribute("aria-label", `Try ${entry.label} earlier`);
   downButton.setAttribute("aria-label", `Try ${entry.label} later`);
-  const removeButton = button("Remove", "btn-quiet", () => {
+  const removeButton = button("Remove", "btn-ghost", () => {
     removeKey(entry.id);
     renderDashboard();
     renderUsageBar();
@@ -113,7 +148,9 @@ function buildKeyRow(entry, index, count) {
   testButton.setAttribute("aria-label", `Test ${entry.label}`);
   const actions = make("div", "key-actions");
   actions.append(testButton, upButton, downButton, removeButton);
-  row.append(info, actions, message);
+  const rank = make("span", "key-rank", String(index + 1));
+  rank.setAttribute("aria-hidden", "true");
+  row.append(rank, info, actions, message);
   return row;
 }
 
@@ -123,7 +160,7 @@ function reorder(id, direction) {
   renderUsageBar();
 }
 
-// [6] The "add a key" form for one category: pick a provider, then fill in the rest.
+// [6] The "add a key" form: pick a provider tile, then fill in the rest.
 function buildAddForm(category) {
   const form = make("div", "key-form");
   const field = (id, label, type, placeholder) => {
@@ -140,13 +177,23 @@ function buildAddForm(category) {
     return { wrap, input, labelNode };
   };
 
-  const pickWrap = make("div", "field");
-  const pickLabel = make("label", "", "Provider");
-  pickLabel.htmlFor = `${category.id}-provider`;
-  const select = make("select");
-  select.id = `${category.id}-provider`;
-  PROVIDERS.forEach((p) => select.append(new Option(`${p.label} – ${p.cost}`, p.id)));
-  pickWrap.append(pickLabel, select);
+  // [6a] Provider tiles: radio buttons dressed as cards, so they work with the keyboard.
+  const tiles = make("fieldset", "providers");
+  tiles.append(make("legend", "", "Provider"));
+  PROVIDERS.forEach((p, index) => {
+    const tile = make("label", "tile");
+    const radio = make("input");
+    radio.type = "radio";
+    radio.name = `${category.id}-provider`;
+    radio.value = p.id;
+    radio.checked = index === 0;
+    const body = make("span", "tile-body");
+    const paid = /^paid/i.test(p.cost);
+    body.append(make("span", "tile-mono", p.mark || p.label.slice(0, 2)), make("span", "tile-name", p.label.split(" (")[0]), make("span", paid ? "tile-cost paid" : "tile-cost", p.cost));
+    tile.append(radio, body);
+    tiles.append(tile);
+  });
+  const selected = () => tiles.querySelector("input:checked").value;
 
   const about = make("p", "hint provider-about");
   const link = make("a", "key-link");
@@ -156,15 +203,17 @@ function buildAddForm(category) {
   const key = field("key", "API key", "password", "Paste your key");
   const model = field("model", "Model (optional)", "text", "");
   const address = field("address", "Server address", "text", "");
-  const message = make("p", "hint");
+  const fields = make("div", "fields");
+  fields.append(label.wrap, key.wrap, model.wrap, address.wrap);
+  const message = make("p", "hint form-msg");
   message.setAttribute("role", "status");
   message.setAttribute("aria-live", "polite");
 
-  // [6a] Whenever the provider changes, update the hints and show only the fields it needs.
+  // [6b] Whenever the provider changes, update the hints and show only the fields it needs.
   const refresh = () => {
-    const provider = getProvider(select.value);
+    const provider = getProvider(selected());
     about.textContent = provider.keyRequired ? "" : "No key is needed for this one. Start the program first and download a model.";
-    link.textContent = provider.keyRequired ? `Get a key from ${provider.label}` : `Download ${provider.label.split(" (")[0]}`;
+    link.textContent = provider.keyRequired ? `Get a key from ${provider.label} →` : `Download ${provider.label.split(" (")[0]} →`;
     link.href = provider.keyUrl;
     key.labelNode.textContent = provider.keyRequired ? "API key" : "API key (not needed)";
     key.input.placeholder = provider.keyRequired ? "Paste your key" : "Leave empty";
@@ -174,12 +223,12 @@ function buildAddForm(category) {
     address.input.placeholder = provider.baseUrl;
     message.textContent = "";
   };
-  select.addEventListener("change", refresh);
+  tiles.addEventListener("change", refresh);
 
   const add = () => {
     const result = addKey({
       category: category.id,
-      provider: select.value,
+      provider: selected(),
       label: label.input.value,
       key: key.input.value,
       model: model.input.value,
@@ -195,7 +244,9 @@ function buildAddForm(category) {
   key.input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") add();
   });
-  form.append(pickWrap, about, label.wrap, key.wrap, model.wrap, address.wrap, button("Add key", "btn-primary", add), message, link);
+  const addRow = make("div", "add-row");
+  addRow.append(button("Add key", "btn-primary", add), link);
+  form.append(tiles, about, fields, message, addRow);
   refresh();
   return form;
 }

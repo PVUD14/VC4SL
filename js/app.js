@@ -1,5 +1,5 @@
 // app.js - connects the page to the generator, the slide renderer and storage.
-import { THEMES, DEFAULT_THEME, LINKEDIN_LIMIT, SLIDE_WIDTH, VIDEO_FORMATS } from "./config.js";
+import { THEMES, DEFAULT_THEME, LINKEDIN_LIMIT, SLIDE_WIDTH, VIDEO_FORMATS, SIGN_OFF } from "./config.js";
 import { load, save } from "./storage.js";
 import { listKeys, migrateLegacyKey } from "./keys.js";
 import { initDashboard, renderDashboard, trackUsage } from "./dashboard.js";
@@ -13,6 +13,9 @@ if (!THEMES.some((t) => t.id === state.theme)) state.theme = DEFAULT_THEME;
 
 const $ = (id) => document.getElementById(id);
 
+// [1a] Value of the chosen pill in a radio group ("goal" or "audience").
+const choice = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+
 // [2] Show a message in the status box. kind is "loading", "error" or "info".
 function setStatus(kind, message, withKeysButton = false) {
   const box = $("status");
@@ -20,7 +23,7 @@ function setStatus(kind, message, withKeysButton = false) {
   box.className = `status is-${kind}`;
   box.replaceChildren(Object.assign(document.createElement("span"), { textContent: message }));
   if (withKeysButton) {
-    const button = Object.assign(document.createElement("button"), { type: "button", className: "btn btn-secondary", textContent: "Open API keys" });
+    const button = Object.assign(document.createElement("button"), { type: "button", className: "btn btn-ghost", textContent: "Open API keys" });
     button.addEventListener("click", () => showScreen("keys"));
     box.append(button);
   }
@@ -45,8 +48,8 @@ async function run(demo) {
   try {
     const result = await generateContent({
       idea,
-      goal: $("goal").value,
-      audience: $("audience").value,
+      goal: choice("goal"),
+      audience: choice("audience"),
       keys: listKeys("writing"),
       samples: load("samples"),
       demo,
@@ -86,7 +89,15 @@ function showResult(result) {
   $("results").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+// [4a] Make a text box as tall as its text, so nothing is hidden behind a scrollbar.
+function autoGrow(box) {
+  box.style.height = "auto";
+  box.style.height = `${box.scrollHeight + 2}px`;
+}
+
 function updateCounts() {
+  autoGrow($("linkedin-text"));
+  autoGrow($("caption-text"));
   const length = $("linkedin-text").value.length;
   const count = $("linkedin-count");
   count.textContent = `${length} / ${LINKEDIN_LIMIT} characters`;
@@ -108,6 +119,7 @@ function selectTab(id, focus) {
   }
   $("theme-bar").hidden = !["tab-carousel", "tab-video"].includes(id);
   if (id === "tab-carousel") refitAll();
+  if (id === "tab-linkedin" || id === "tab-caption") updateCounts(); // boxes can only be measured while visible
 }
 
 // [6] Slide previews. Each slide is shown scaled down inside a frame.
@@ -123,7 +135,7 @@ function renderSlides() {
     frame.append(node);
     const button = Object.assign(document.createElement("button"), {
       type: "button",
-      className: "btn btn-secondary",
+      className: "btn",
       textContent: `Download slide ${index + 1} (PNG)`,
     });
     button.addEventListener("click", () => exportOne(index, button));
@@ -298,6 +310,8 @@ function saveSettings(event) {
 function showScreen(name) {
   $("screen-keys").hidden = name !== "keys";
   $("screen-app").hidden = name !== "app";
+  if (name === "keys") $("open-keys").setAttribute("aria-current", "page");
+  else $("open-keys").removeAttribute("aria-current");
   if (name === "keys") renderDashboard();
   window.scrollTo(0, 0);
 }
@@ -321,6 +335,17 @@ TAB_IDS.forEach((id, i) => {
     if (step) selectTab(TAB_IDS[(i + step + TAB_IDS.length) % TAB_IDS.length], true);
   });
 });
+// [12b] Live word count under the idea box.
+$("idea").addEventListener("input", () => {
+  const words = $("idea").value.trim().split(/\s+/).filter(Boolean).length;
+  $("idea-count").textContent = `${words} word${words === 1 ? "" : "s"}`;
+});
+
+// [12c] The post preview shows your name and initials, taken from the sign-off in config.js setting [4].
+const displayName = SIGN_OFF || "You";
+$("post-author").textContent = displayName;
+$("avatar").textContent = displayName.split(/\s+/).map((w) => w[0]).slice(-2).join("").toUpperCase();
+
 buildThemeSwitch();
 setupVideoControls();
 
