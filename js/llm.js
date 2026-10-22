@@ -8,11 +8,14 @@ import { buildSystemPrompt, buildUserPrompt, RESPONSE_SCHEMA } from "./prompts.j
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
 
 // [2] An error whose message is already written for a normal person.
+//     action "keys" tells the UI to offer an "Open API keys" button.
+//     failover true means "this key failed, so it is worth trying the next saved key".
 export class FriendlyError extends Error {
-  constructor(message, action = "") {
+  constructor(message, action = "", failover = false) {
     super(message);
     this.name = "FriendlyError";
-    this.action = action; // "settings" tells the UI to offer an "Open settings" button
+    this.action = action;
+    this.failover = failover;
   }
 }
 
@@ -42,24 +45,43 @@ const DEMO_RESULT = {
 };
 
 // [4] Pick demo or live generation. Always returns the same clean shape.
-export async function generateContent({ idea, goal, audience, apiKey, model, samples, demo }) {
+//     'keys' is the list of saved writing keys. They are tried in order; if one hits its limit or
+//     is rejected, the next is used. 'onUsage(keyId, tokens)' is called after every request.
+export async function generateContent({ idea, goal, audience, keys, samples, demo, onUsage }) {
   if (demo) {
     await new Promise((resolve) => setTimeout(resolve, 700)); // [4a] Mimic a short wait.
-    return normalize(structuredClone(DEMO_RESULT));
+    return { ...normalize(structuredClone(DEMO_RESULT)), usedKeyId: null, skipped: [] };
   }
-  if (!apiKey) {
-    throw new FriendlyError("No API key yet. Open Settings and paste your free Gemini key, or try the demo.", "settings");
+  if (!keys || keys.length === 0) {
+    throw new FriendlyError("No API key yet. Open API keys and add your free Gemini key, or try the demo.", "keys");
   }
   const system = buildSystemPrompt({ goal, audience, samples });
   const user = buildUserPrompt(idea);
-  const chosenModel = (model || MODEL_NAME).trim();
+  const skipped = [];
+  let lastError;
+  for (const entry of keys) {
+    try {
+      const result = await generateWithKey(entry, system, user, onUsage);
+      return { ...result, usedKeyId: entry.id, skipped };
+    } catch (error) {
+      if (!error.failover) throw error;
+      skipped.push({ label: entry.label, reason: error.message });
+      lastError = error;
+    }
+  }
+  const tried = keys.length > 1 ? ` (all ${keys.length} saved keys were tried)` : "";
+  throw new FriendlyError(`${lastError.message}${tried}`, lastError.action);
+}
+
+// [4b] One key: ask once, and ask again only if the reply was broken JSON.
+async function generateWithKey(entry, system, user, onUsage) {
+  const call = () => callGemini({ apiKey: entry.key, model: entry.model || MODEL_NAME, system, user, schema: RESPONSE_SCHEMA, onUsage: (t) => onUsage?.(entry.id, t) });
   try {
-    return normalize(await callGemini({ apiKey, model: chosenModel, system, user }));
+    return normalize(await call());
   } catch (error) {
-    // [4b] Malformed JSON gets exactly one retry; every other error is final.
     if (error.code !== "BAD_JSON") throw error;
     try {
-      return normalize(await callGemini({ apiKey, model: chosenModel, system, user }));
+      return normalize(await call());
     } catch (second) {
       if (second.code === "BAD_JSON") {
         throw new FriendlyError("The AI replied in a broken format twice. Press Generate again, or try a shorter idea.");
@@ -69,8 +91,22 @@ export async function generateContent({ idea, goal, audience, apiKey, model, sam
   }
 }
 
+// [4c] A tiny request that proves a key works. It costs a few tokens, which are counted.
+export async function testKey(entry, onUsage) {
+  const schema = { type: "object", properties: { ok: { type: "boolean" } }, required: ["ok"] };
+  const data = await callGemini({
+    apiKey: entry.key,
+    model: entry.model || MODEL_NAME,
+    system: "Reply with JSON only.",
+    user: "Return {\"ok\": true}.",
+    schema,
+    onUsage: (t) => onUsage?.(entry.id, t),
+  });
+  if (data?.ok !== true) throw new FriendlyError("The key connected but the answer was unexpected. Try again.");
+}
+
 // [5] One Gemini request. The key goes in a header, never in the URL.
-async function callGemini({ apiKey, model, system, user }) {
+async function callGemini({ apiKey, model, system, user, schema, onUsage }) {
   let response;
   try {
     response = await fetch(`${GEMINI_BASE}${encodeURIComponent(model)}:generateContent`, {
@@ -79,14 +115,25 @@ async function callGemini({ apiKey, model, system, user }) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: [{ role: "user", parts: [{ text: user }] }],
-        generationConfig: { responseMimeType: "application/json", responseJsonSchema: RESPONSE_SCHEMA, temperature: 0.8 },
+        generationConfig: { responseMimeType: "application/json", responseJsonSchema: schema, temperature: 0.8 },
       }),
     });
   } catch {
     throw new FriendlyError("Could not reach Google. Check your internet connection and try again.");
   }
   if (!response.ok) throw await httpError(response);
-  return parseReply(await response.json());
+  const data = await response.json();
+  reportUsage(data, onUsage); // [5a] Tokens are spent even if the reply turns out unusable, so count them first.
+  return parseReply(data);
+}
+
+// [5b] Read Google's own token counts from the reply. "output" includes any hidden thinking tokens.
+function reportUsage(data, onUsage) {
+  const meta = data.usageMetadata;
+  if (!meta || !onUsage) return;
+  const input = meta.promptTokenCount || 0;
+  const total = meta.totalTokenCount || 0;
+  onUsage({ input, output: Math.max(0, total - input), total });
 }
 
 // [6] Convert an HTTP failure into a plain-English message.
@@ -98,11 +145,11 @@ async function httpError(response) {
     // Body was not JSON; the status code alone is enough.
   }
   const status = response.status;
-  if (status === 429) return new FriendlyError("Free-tier limit reached. Wait about a minute and try again, or switch the model in Settings.");
-  if (status === 400 && /api key/i.test(detail)) return new FriendlyError("Google rejected this API key. Check it in Settings.", "settings");
-  if (status === 401 || status === 403) return new FriendlyError("Google rejected this API key. Paste a fresh key from aistudio.google.com in Settings.", "settings");
-  if (status === 404) return new FriendlyError("That model name is not available. Change the model in Settings or in config.js line [1].", "settings");
-  if (status === 503 || status === 500) return new FriendlyError("Google's model is busy right now. Wait a moment and press Generate again.");
+  if (status === 429) return new FriendlyError("This key hit Google's free-tier limit. Wait about a minute, or add another key.", "keys", true);
+  if (status === 400 && /api key/i.test(detail)) return new FriendlyError("Google rejected this API key. Check it on the API keys screen.", "keys", true);
+  if (status === 401 || status === 403) return new FriendlyError("Google rejected this API key. Paste a fresh key from aistudio.google.com.", "keys", true);
+  if (status === 404) return new FriendlyError("That model name is not available for this key. Clear the model box on the API keys screen to use the default.", "keys", true);
+  if (status === 503 || status === 500) return new FriendlyError("Google's model is busy right now. Wait a moment and try again.", "", true);
   return new FriendlyError(`Google returned an error (code ${status}). ${detail}`.trim());
 }
 

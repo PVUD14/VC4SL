@@ -18,10 +18,27 @@
       <span class="brand-name">VC4SL</span>
       <span class="brand-sub">A personal project</span>
     </div>
-    <button type="button" id="open-settings" class="btn btn-quiet">Settings</button>
+    <nav class="top-actions" aria-label="Main">
+      <button type="button" id="open-keys" class="btn btn-quiet">API keys</button>
+      <button type="button" id="open-settings" class="btn btn-quiet">Voice samples</button>
+    </nav>
   </header>
 
-  <main>
+  <main id="screen-keys" hidden>
+    <section class="panel" aria-labelledby="keys-title">
+      <h1 id="keys-title" class="big-label">Set up your API keys</h1>
+      <p class="warn" role="note">Your keys stay in this browser only. Never share them or commit them to GitHub.</p>
+      <p class="hint">Each card shows what a key is used for. Token counts at the bottom are measured by this app from the AI's replies in this browser. They are estimates, not Google's official quota figures.</p>
+      <div id="key-cards" class="key-cards"></div>
+      <div class="actions">
+        <button type="button" id="keys-continue" class="btn btn-primary">Continue</button>
+        <button type="button" id="keys-demo" class="btn btn-secondary">Try demo (no key)</button>
+      </div>
+      <p id="keys-continue-hint" class="hint" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <main id="screen-app" hidden>
     <section class="panel" aria-labelledby="idea-label">
       <label id="idea-label" for="idea" class="big-label">Dump your idea. Messy is fine.</label>
       <textarea id="idea" rows="7" placeholder="e.g. my uncle got a fake courier SMS, clicked the link, and nearly lost his bank login. People think hackers are geniuses but mostly they just rely on us being in a hurry..."></textarea>
@@ -122,26 +139,24 @@
 
   <dialog id="settings" aria-labelledby="settings-title">
     <form method="dialog" class="settings-form" id="settings-form">
-      <h2 id="settings-title">Settings</h2>
-      <p class="warn" role="note">Your key stays in this browser only. Never share it or commit it to GitHub.</p>
-
-      <label for="api-key">Gemini API key</label>
-      <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your free key from aistudio.google.com">
-
-      <label for="model">Model name</label>
-      <input id="model" type="text" autocomplete="off" spellcheck="false">
+      <h2 id="settings-title">Voice samples</h2>
 
       <label for="samples">Voice samples (paste 3 to 5 of your best past posts, separated by a blank line)</label>
       <textarea id="samples" rows="9" placeholder="Paste your own posts here. The AI copies your tone, not your facts."></textarea>
 
       <div class="actions">
         <button type="submit" id="save-settings" class="btn btn-primary" value="save">Save</button>
-        <button type="button" id="clear-key" class="btn btn-secondary">Clear key</button>
         <button type="submit" class="btn btn-quiet" value="close">Close</button>
       </div>
       <p id="settings-msg" class="hint" role="status" aria-live="polite"></p>
     </form>
   </dialog>
+
+  <aside id="usage-bar" class="usage-bar" aria-label="Tokens used per API key">
+    <span class="usage-title">Tokens used</span>
+    <ul id="usage-list" class="usage-list"></ul>
+    <button type="button" id="reset-usage" class="btn btn-quiet usage-reset">Reset counts</button>
+  </aside>
 
   <script src="vendor/html-to-image.js"></script>
   <script src="vendor/jszip.min.js"></script>

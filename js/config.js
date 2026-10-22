@@ -86,3 +86,35 @@ export const VIDEO_FORMATS = [
   { id: "reel", label: "Reel / Story (9:16)", height: 1920 },
   { id: "feed", label: "Feed video (4:5)", height: 1350 },
 ];
+
+// [20] KEY CATEGORIES. The first screen (API keys dashboard) is built from this list.
+//      id: short internal name. title: card heading. needsKey: true = the app asks for keys here.
+//      usedFor / notUsed: plain-English explanation shown on the card. Edit the wording freely.
+//      Only the "writing" category can hold keys today. The others explain why no key is needed.
+export const KEY_CATEGORIES = [
+  {
+    id: "writing",
+    title: "Writing AI",
+    provider: "Google Gemini",
+    needsKey: true,
+    usedFor: "Turns your rough idea into the LinkedIn post, the slide text and the caption. This is the only step that calls an AI service.",
+    notUsed: "Not used for PNG slides or MP4 videos. Those are made on your own computer.",
+    multiKeyNote: "Add more than one key and the app switches to the next key when one hits its free limit.",
+    getKeyUrl: "https://aistudio.google.com/apikey",
+    getKeyText: "Get a free Gemini key at aistudio.google.com",
+  },
+  {
+    id: "voice",
+    title: "Voice interviewer (Phase 2)",
+    needsKey: false,
+    usedFor: "Not built yet. When added, it will use your browser's built-in speech recognition and voices.",
+    notUsed: "No key needed. Your browser vendor processes the audio, as described in the README privacy section.",
+  },
+  {
+    id: "media",
+    title: "Slides, PNG and video",
+    needsKey: false,
+    usedFor: "Drawn and encoded inside your browser, using your own computer.",
+    notUsed: "No key needed and no cost.",
+  },
+];

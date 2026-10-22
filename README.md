@@ -33,17 +33,30 @@ It needs a recent Chrome or Edge (Safari should work too), opened from `http://l
 
 For 9:16 Reels the text keeps clear of Instagram's own buttons at the top and bottom.
 
-## Get a free key
+## API keys: what they are for
 
-1. Go to <https://aistudio.google.com> and create a Gemini API key (free tier).
-2. In the app, open **Settings**, paste the key, and press **Save**.
+The first screen is an **API keys** dashboard. Each card explains what that part of the app does and whether it needs a key.
 
-The key is kept in your browser's localStorage only. It is sent to Google in a request header (`x-goog-api-key`), never in a URL, and the app never logs it.
+| Category | Needs a key? | What it does |
+|---|---|---|
+| Writing AI (Google Gemini) | Yes | Turns your idea into the LinkedIn post, slide text and caption. The only step that calls an AI service. |
+| Voice interviewer (Phase 2) | No | Not built yet. Will use the browser's own speech features. |
+| Slides, PNG and video | No | Made on your own computer. |
+
+Get a free Gemini key at <https://aistudio.google.com/apikey>, then add it on the dashboard. You can add **several keys** to one category. They are tried in order, and if one hits its free limit or is rejected, the app moves to the next and tells you.
+
+Use **Test** next to a key to check it works. Use **API keys** in the header to come back to this screen at any time. Categories and their wording are listed in `js/config.js`, setting [20].
+
+### Token counter
+
+The bar at the bottom shows tokens used per key: today, in total, and the number of requests. It adds up the counts Google returns with each reply. These are good estimates for this browser only. They are not Google's official quota figures, and they do not include use of the same key elsewhere. The demo does not use any tokens. **Reset counts** zeroes them.
+
+Keys are kept in your browser's localStorage only. They are sent to Google in a request header (`x-goog-api-key`), never in a URL, shown only as the last four characters, and never logged.
 
 ## Make it sound like you
 
 - Open `js/config.js`. Every setting a non-coder may want is at the top, with numbered comments: model name, handle, sign-off, voice rules, emoji and hashtag limits, slide count, themes.
-- In **Settings**, paste 3 to 5 of your best past posts into "Voice samples". They are stored only in your browser and sent with each request as style examples.
+- Under **Voice samples** in the header, paste 3 to 5 of your best past posts. They are stored only in your browser and sent with each request as style examples.
 
 ## Files
 
@@ -55,6 +68,8 @@ The key is kept in your browser's localStorage only. It is sent to Google in a r
 | `js/prompts.js` | Builds the instructions sent to the AI |
 | `js/render.js` | Slide building, text fitting, PNG and ZIP export |
 | `js/storage.js` | Safe localStorage wrapper |
+| `js/keys.js` | Key vault and token counting |
+| `js/dashboard.js` | The API keys screen and the bottom token bar |
 | `js/app.js` | Wires the buttons and tabs together |
 | `css/app.css`, `css/slides.css` | App look and the three slide themes |
 | `js/video.js` | Builds the MP4 with the browser's H.264 encoder |
@@ -69,7 +84,7 @@ To add another AI provider later (Groq, OpenRouter, and so on), add a function i
 - The text you type is sent to Google's Gemini API to generate content.
 - On the free tier, Google may use submitted data under its own terms. Read them before you paste anything.
 - Do not paste confidential or employer-sensitive material: unreleased vulnerability details, client data, internal incidents.
-- Your API key and voice samples stay in your browser's localStorage. They are never part of this repository.
+- Your API keys, token counts and voice samples stay in your browser's localStorage. They are never part of this repository.
 - Phase 2 (voice) will use the browser's speech recognition, which sends audio to the browser vendor (for example Google for Chrome).
 
 ## Responsible use

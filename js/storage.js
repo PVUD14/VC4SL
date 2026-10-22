@@ -32,3 +32,18 @@ export function remove(name) {
     // Nothing to do: if storage is blocked there is nothing stored to remove.
   }
 }
+
+// [5] Read a saved value that holds structured data (a list or an object).
+export function loadJson(name, fallback) {
+  try {
+    const parsed = JSON.parse(load(name, ""));
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// [6] Save structured data. Returns true on success.
+export function saveJson(name, value) {
+  return save(name, JSON.stringify(value));
+}

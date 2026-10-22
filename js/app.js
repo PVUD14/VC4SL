@@ -1,6 +1,8 @@
 // app.js - connects the page to the generator, the slide renderer and storage.
-import { MODEL_NAME, THEMES, DEFAULT_THEME, LINKEDIN_LIMIT, SLIDE_WIDTH, VIDEO_FORMATS } from "./config.js";
-import { load, save, remove } from "./storage.js";
+import { THEMES, DEFAULT_THEME, LINKEDIN_LIMIT, SLIDE_WIDTH, VIDEO_FORMATS } from "./config.js";
+import { load, save } from "./storage.js";
+import { listKeys, migrateLegacyKey } from "./keys.js";
+import { initDashboard, renderDashboard, trackUsage } from "./dashboard.js";
 import { generateContent, FriendlyError } from "./llm.js";
 import { buildSlide, fitSlide, slideToBlob, slidesToZip, downloadBlob } from "./render.js";
 import { makeVideo, videoSupported } from "./video.js";
@@ -12,14 +14,14 @@ if (!THEMES.some((t) => t.id === state.theme)) state.theme = DEFAULT_THEME;
 const $ = (id) => document.getElementById(id);
 
 // [2] Show a message in the status box. kind is "loading", "error" or "info".
-function setStatus(kind, message, withSettingsButton = false) {
+function setStatus(kind, message, withKeysButton = false) {
   const box = $("status");
   box.hidden = false;
   box.className = `status is-${kind}`;
   box.replaceChildren(Object.assign(document.createElement("span"), { textContent: message }));
-  if (withSettingsButton) {
-    const button = Object.assign(document.createElement("button"), { type: "button", className: "btn btn-secondary", textContent: "Open Settings" });
-    button.addEventListener("click", openSettings);
+  if (withKeysButton) {
+    const button = Object.assign(document.createElement("button"), { type: "button", className: "btn btn-secondary", textContent: "Open API keys" });
+    button.addEventListener("click", () => showScreen("keys"));
     box.append(button);
   }
 }
@@ -45,16 +47,21 @@ async function run(demo) {
       idea,
       goal: $("goal").value,
       audience: $("audience").value,
-      apiKey: load("apiKey"),
-      model: load("model") || MODEL_NAME,
+      keys: listKeys("writing"),
       samples: load("samples"),
       demo,
+      onUsage: trackUsage,
     });
     showResult(result);
     clearStatus();
+    if (result.skipped.length > 0) {
+      const used = listKeys("writing").find((k) => k.id === result.usedKeyId);
+      const names = result.skipped.map((k) => `"${k.label}"`).join(", ");
+      setStatus("info", `Key ${names} failed, so the app used "${used?.label}" instead.`);
+    }
   } catch (error) {
     const friendly = error instanceof FriendlyError;
-    setStatus("error", friendly ? error.message : "Something unexpected went wrong. Please try again.", friendly && error.action === "settings");
+    setStatus("error", friendly ? error.message : "Something unexpected went wrong. Please try again.", friendly && error.action === "keys");
   } finally {
     setBusy(false);
   }
@@ -272,10 +279,8 @@ async function copyFrom(button) {
   setTimeout(() => { button.textContent = label; }, 1800);
 }
 
-// [11] Settings dialog.
+// [11] Voice samples dialog (your past posts, used as style examples).
 function openSettings() {
-  $("api-key").value = load("apiKey");
-  $("model").value = load("model") || MODEL_NAME;
   $("samples").value = load("samples");
   $("settings-msg").textContent = "";
   $("settings").showModal();
@@ -284,26 +289,25 @@ function openSettings() {
 function saveSettings(event) {
   if (event.submitter?.value !== "save") return;
   event.preventDefault();
-  const ok = [
-    save("apiKey", $("api-key").value.trim()),
-    save("model", $("model").value.trim()),
-    save("samples", $("samples").value.trim()),
-  ].every(Boolean);
-  $("settings-msg").textContent = ok ? "Saved in this browser." : "Your browser blocked saving. Check its privacy settings.";
+  $("settings-msg").textContent = save("samples", $("samples").value.trim())
+    ? "Saved in this browser."
+    : "Your browser blocked saving. Check its privacy settings.";
 }
 
-function clearKey() {
-  remove("apiKey");
-  $("api-key").value = "";
-  $("settings-msg").textContent = "Key removed from this browser.";
+// [11b] Switch between the API keys screen and the main app.
+function showScreen(name) {
+  $("screen-keys").hidden = name !== "keys";
+  $("screen-app").hidden = name !== "app";
+  if (name === "keys") renderDashboard();
+  window.scrollTo(0, 0);
 }
 
 // [12] Wire everything up.
 $("generate").addEventListener("click", () => run(false));
 $("demo").addEventListener("click", () => run(true));
 $("open-settings").addEventListener("click", openSettings);
+$("open-keys").addEventListener("click", () => showScreen("keys"));
 $("settings-form").addEventListener("submit", saveSettings);
-$("clear-key").addEventListener("click", clearKey);
 $("download-zip").addEventListener("click", exportZip);
 $("make-video").addEventListener("click", createVideo);
 $("download-video").addEventListener("click", () => videoState.blob && downloadBlob(videoState.blob, "carousel-video.mp4"));
@@ -319,3 +323,14 @@ TAB_IDS.forEach((id, i) => {
 });
 buildThemeSwitch();
 setupVideoControls();
+
+// [13] First screen: the API keys dashboard, unless a writing key is already saved.
+migrateLegacyKey();
+initDashboard({
+  onContinue: () => showScreen("app"),
+  onDemo: () => {
+    showScreen("app");
+    run(true);
+  },
+});
+showScreen(listKeys("writing").length > 0 ? "app" : "keys");
