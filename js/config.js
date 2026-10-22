@@ -60,3 +60,29 @@ export const LINKEDIN_LIMIT = 3000;
 // [12] Slide size in pixels (Instagram 4:5 portrait). Change only if you also change css/slides.css.
 export const SLIDE_WIDTH = 1080;
 export const SLIDE_HEIGHT = 1350;
+
+// [13] VIDEO SETTINGS. The app turns your slides into an MP4 you can upload as a Reel or a feed video.
+//      Frames per second. Safe values: 24 to 30. Higher makes bigger files.
+export const VIDEO_FPS = 30;
+
+// [14] Fewest seconds any slide stays on screen. Safe values: 2 to 5.
+export const VIDEO_MIN_SECONDS = 2.5;
+
+// [15] Extra seconds added per word on a slide, so longer text stays up longer. Safe values: 0.08 to 0.3.
+export const VIDEO_SECONDS_PER_WORD = 0.12;
+
+// [16] Most seconds any one slide may stay on screen. Safe values: 4 to 10.
+export const VIDEO_MAX_SECONDS = 6;
+
+// [17] Length of the fade between slides, in seconds. Safe values: 0.2 to 1. Use 0 for hard cuts.
+export const VIDEO_FADE_SECONDS = 0.5;
+
+// [18] Video quality as megabits per second. Safe values: 2 to 8. Flat slide graphics look fine at 4, and files stay small.
+export const VIDEO_MBPS = 4;
+
+// [19] Video shapes. 'height' is in pixels (width is always [12]). 9:16 is for Reels and Stories.
+//      First entry is the default.
+export const VIDEO_FORMATS = [
+  { id: "reel", label: "Reel / Story (9:16)", height: 1920 },
+  { id: "feed", label: "Feed video (4:5)", height: 1350 },
+];

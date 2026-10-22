@@ -6,6 +6,7 @@ A free, open-source personal project. Type or paste a rambling idea and get:
 2. Instagram carousel copy (5 to 8 slides) with live, editable previews
 3. An Instagram caption with hashtags
 4. Downloadable 1080x1350 PNG slides, one by one or as a ZIP
+5. A downloadable **MP4 video** of the carousel (Reel/Story 9:16 or feed 4:5), made entirely in your browser
 
 Nothing is ever posted automatically. You review, edit and copy everything yourself.
 
@@ -20,6 +21,17 @@ python -m http.server 8080
 Then open <http://localhost:8080>. (Opening `index.html` directly from disk will not work, because browsers block ES modules on `file://`.)
 
 Click **Try demo (no key)** to see the whole app working without any account.
+
+## Make a video
+
+1. Generate content, edit the slides and pick a theme.
+2. Open the **Video (MP4)** tab, choose a shape, press **Create video**, then **Download MP4**.
+
+The video is H.264 MP4, 30 fps, with a slow zoom and a fade between slides. Each slide stays on screen longer when it has more words. It has no sound. A typical 30 second video takes 10 to 15 seconds to build and is about 15 MB.
+
+It needs a recent Chrome or Edge (Safari should work too), opened from `http://localhost` or HTTPS. The video is built on your computer with the browser's own encoder. Nothing is uploaded. Timing, speed, quality and shapes are settings [13] to [19] in `js/config.js`.
+
+For 9:16 Reels the text keeps clear of Instagram's own buttons at the top and bottom.
 
 ## Get a free key
 
@@ -45,7 +57,8 @@ The key is kept in your browser's localStorage only. It is sent to Google in a r
 | `js/storage.js` | Safe localStorage wrapper |
 | `js/app.js` | Wires the buttons and tabs together |
 | `css/app.css`, `css/slides.css` | App look and the three slide themes |
-| `vendor/` | `html-to-image` 1.11.13 and `JSZip` 3.10.2, copied in so the app works offline |
+| `js/video.js` | Builds the MP4 with the browser's H.264 encoder |
+| `vendor/` | `html-to-image` 1.11.13, `JSZip` 3.10.2 and `mp4-muxer` 5.2.2, copied in so the app works offline |
 | `samples/` | Your private past posts (ignored by git) |
 | `docs/ROADMAP.md` | Phase 2 plan |
 

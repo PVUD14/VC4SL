@@ -2,7 +2,7 @@
    Text sizes below are multiplied by --fit, which render.js lowers when text is too long. */
 
 /* [1] Off-screen area used while exporting PNGs. Never visible. */
-.export-stage { position: fixed; left: -20000px; top: 0; width: 1080px; height: 1350px; pointer-events: none; }
+.export-stage { position: fixed; left: -20000px; top: 0; width: 1080px; pointer-events: none; }
 
 /* [2] Shared layout for all themes. */
 .slide {
@@ -29,6 +29,9 @@
 .slide-middle .slide-heading { font-size: calc(80px * var(--fit)); }
 .slide-last .slide-heading { font-size: calc(92px * var(--fit)); }
 .slide-body { font-size: calc(46px * var(--fit)); }
+
+/* [2b] 9:16 Reels: keep text clear of Instagram's own buttons at the top and bottom. */
+.slide-tall { padding-top: 200px; padding-bottom: 300px; }
 
 /* [3] Theme 1: dark editorial. Serif headlines, warm off-white on near-black, brass accent. */
 .theme-editorial { background: #0e0f12; color: #f2efe8; font-family: Georgia, "Times New Roman", serif; }

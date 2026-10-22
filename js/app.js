@@ -1,8 +1,9 @@
 // app.js - connects the page to the generator, the slide renderer and storage.
-import { MODEL_NAME, THEMES, DEFAULT_THEME, LINKEDIN_LIMIT, SLIDE_WIDTH } from "./config.js";
+import { MODEL_NAME, THEMES, DEFAULT_THEME, LINKEDIN_LIMIT, SLIDE_WIDTH, VIDEO_FORMATS } from "./config.js";
 import { load, save, remove } from "./storage.js";
 import { generateContent, FriendlyError } from "./llm.js";
 import { buildSlide, fitSlide, slideToBlob, slidesToZip, downloadBlob } from "./render.js";
+import { makeVideo, videoSupported } from "./video.js";
 
 // [1] The one place that holds the current result and the chosen theme.
 const state = { slides: [], theme: load("theme", DEFAULT_THEME), busy: false };
@@ -87,7 +88,7 @@ function updateCounts() {
 }
 
 // [5] Tabs: click or use the arrow keys.
-const TAB_IDS = ["tab-linkedin", "tab-carousel", "tab-caption"];
+const TAB_IDS = ["tab-linkedin", "tab-carousel", "tab-video", "tab-caption"];
 
 function selectTab(id, focus) {
   for (const tabId of TAB_IDS) {
@@ -98,6 +99,7 @@ function selectTab(id, focus) {
     $(tab.getAttribute("aria-controls")).hidden = !selected;
     if (selected && focus) tab.focus();
   }
+  $("theme-bar").hidden = !["tab-carousel", "tab-video"].includes(id);
   if (id === "tab-carousel") refitAll();
 }
 
@@ -131,6 +133,7 @@ function onSlideEdit(node, index) {
     body: node.querySelector(".slide-body")?.textContent || "",
   };
   fitSlide(node);
+  clearVideo();
 }
 
 // [7] Fit text and scale previews to their frames. Runs after layout is ready.
@@ -192,10 +195,66 @@ function buildThemeSwitch() {
     button.addEventListener("click", () => {
       state.theme = theme.id;
       save("theme", theme.id);
+      clearVideo();
       group.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
       renderSlides();
     });
     group.append(button);
+  }
+}
+
+// [9b] Video. Builds an MP4 from the current slides and theme, shows it, and offers a download.
+const videoState = { url: "", blob: null, busy: false };
+
+function clearVideo() {
+  if (videoState.url) URL.revokeObjectURL(videoState.url);
+  videoState.url = "";
+  videoState.blob = null;
+  $("video-result").hidden = true;
+  $("video-player").removeAttribute("src");
+  $("video-msg").textContent = "";
+}
+
+function setupVideoControls() {
+  const select = $("video-format");
+  for (const format of VIDEO_FORMATS) select.append(new Option(format.label, format.id));
+  if (!videoSupported()) {
+    $("make-video").disabled = true;
+    $("video-msg").textContent = "This browser cannot make videos. Open the app in the latest Chrome or Edge (at http://localhost or https), or use the PNG slides instead.";
+  }
+}
+
+async function createVideo() {
+  if (videoState.busy || !state.slides.length) return;
+  const format = VIDEO_FORMATS.find((f) => f.id === $("video-format").value) || VIDEO_FORMATS[0];
+  clearVideo();
+  videoState.busy = true;
+  $("make-video").disabled = true;
+  $("make-video").textContent = "Creating...";
+  $("video-progress").hidden = false;
+  const update = (fraction) => {
+    const percent = Math.round(fraction * 100);
+    $("video-bar").value = percent;
+    $("video-pct").textContent = `${percent}%`;
+  };
+  update(0);
+  $("video-msg").textContent = "Keep this tab open. A 30 second video usually takes under a minute.";
+  try {
+    const { blob, seconds } = await makeVideo(state.slides, state.theme, format.height, update);
+    videoState.blob = blob;
+    videoState.url = URL.createObjectURL(blob);
+    $("video-player").src = videoState.url;
+    $("video-result").hidden = false;
+    $("video-msg").textContent = `Done: ${Math.round(seconds)} seconds, ${(blob.size / 1e6).toFixed(1)} MB. Press play to preview.`;
+  } catch (error) {
+    $("video-msg").textContent = error.message === "NO_H264"
+      ? "This computer cannot encode H.264 video in the browser. Try the latest Chrome or Edge, or use the PNG slides."
+      : "The video could not be created. Close other heavy tabs and try again, or try another browser such as Chrome.";
+  } finally {
+    videoState.busy = false;
+    $("make-video").disabled = !videoSupported();
+    $("make-video").textContent = "Create video";
+    $("video-progress").hidden = true;
   }
 }
 
@@ -246,6 +305,8 @@ $("open-settings").addEventListener("click", openSettings);
 $("settings-form").addEventListener("submit", saveSettings);
 $("clear-key").addEventListener("click", clearKey);
 $("download-zip").addEventListener("click", exportZip);
+$("make-video").addEventListener("click", createVideo);
+$("download-video").addEventListener("click", () => videoState.blob && downloadBlob(videoState.blob, "carousel-video.mp4"));
 $("linkedin-text").addEventListener("input", updateCounts);
 $("caption-text").addEventListener("input", updateCounts);
 document.querySelectorAll("[data-copy]").forEach((button) => button.addEventListener("click", () => copyFrom(button)));
@@ -257,3 +318,4 @@ TAB_IDS.forEach((id, i) => {
   });
 });
 buildThemeSwitch();
+setupVideoControls();

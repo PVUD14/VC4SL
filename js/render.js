@@ -4,11 +4,13 @@ import { HANDLE, SLIDE_WIDTH, SLIDE_HEIGHT } from "./config.js";
 
 // [1] Build one slide as a DOM element. Model text is only ever set with textContent.
 //     'editable' is true in the on-screen preview and false for the hidden export copy.
-export function buildSlide(slide, index, total, themeId, editable) {
+//     'height' defaults to the 4:5 slide height; videos pass 1920 for 9:16.
+export function buildSlide(slide, index, total, themeId, editable, height = SLIDE_HEIGHT) {
   const kind = index === 0 ? "first" : index === total - 1 ? "last" : "middle";
-  const root = el("div", `slide theme-${themeId} slide-${kind}`);
+  const tall = height > SLIDE_HEIGHT ? " slide-tall" : "";
+  const root = el("div", `slide theme-${themeId} slide-${kind}${tall}`);
   root.style.width = `${SLIDE_WIDTH}px`;
-  root.style.height = `${SLIDE_HEIGHT}px`;
+  root.style.height = `${height}px`;
 
   const top = el("div", "slide-top");
   top.append(el("span", "slide-count", `${pad(index + 1)} / ${pad(total)}`), el("span", "slide-rule"));
@@ -45,23 +47,33 @@ export function fitSlide(root) {
   }
 }
 
-// [3] Export one slide to a PNG Blob by rendering a fresh, un-scaled copy off-screen.
-export async function slideToBlob(slide, index, total, themeId) {
+// [3] Render one slide off-screen at full size and hand it to 'capture' (a html-to-image call).
+async function captureSlide(slide, index, total, themeId, height, capture) {
   const stage = el("div", "export-stage");
-  const root = buildSlide(slide, index, total, themeId, false);
+  const root = buildSlide(slide, index, total, themeId, false, height);
   stage.append(root);
   document.body.append(stage);
   try {
     fitSlide(root);
-    return await window.htmlToImage.toBlob(root, {
+    return await capture(root, {
       width: SLIDE_WIDTH,
-      height: SLIDE_HEIGHT,
+      height,
       pixelRatio: 1,
       skipFonts: true, // [3a] We use system fonts only, so nothing needs to be fetched.
     });
   } finally {
     stage.remove();
   }
+}
+
+// [3b] One slide as a PNG Blob (4:5).
+export function slideToBlob(slide, index, total, themeId) {
+  return captureSlide(slide, index, total, themeId, SLIDE_HEIGHT, (root, opts) => window.htmlToImage.toBlob(root, opts));
+}
+
+// [3c] One slide as a canvas of any height. Used by the video exporter.
+export function slideToCanvas(slide, index, total, themeId, height) {
+  return captureSlide(slide, index, total, themeId, height, (root, opts) => window.htmlToImage.toCanvas(root, opts));
 }
 
 // [4] Save a Blob as a file download.

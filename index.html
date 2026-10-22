@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- [1] Security: only this site's own files may run, and the only outside address allowed is Google's Gemini API. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src blob:; connect-src 'self' https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'; object-src 'none'">
   <title>VC4SL Content Engine</title>
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/slides.css">
@@ -59,7 +59,13 @@
       <div class="tabs" role="tablist" aria-label="Output type">
         <button type="button" role="tab" id="tab-linkedin" aria-controls="pane-linkedin" aria-selected="true">LinkedIn post</button>
         <button type="button" role="tab" id="tab-carousel" aria-controls="pane-carousel" aria-selected="false" tabindex="-1">Instagram carousel</button>
+        <button type="button" role="tab" id="tab-video" aria-controls="pane-video" aria-selected="false" tabindex="-1">Video (MP4)</button>
         <button type="button" role="tab" id="tab-caption" aria-controls="pane-caption" aria-selected="false" tabindex="-1">Caption</button>
+      </div>
+
+      <div id="theme-bar" class="pane-bar theme-bar" hidden>
+        <span class="count" id="theme-label">Slide theme</span>
+        <div class="theme-switch" role="group" aria-labelledby="theme-label" id="theme-switch"></div>
       </div>
 
       <div id="pane-linkedin" role="tabpanel" aria-labelledby="tab-linkedin" class="pane">
@@ -73,11 +79,30 @@
 
       <div id="pane-carousel" role="tabpanel" aria-labelledby="tab-carousel" class="pane" hidden>
         <div class="pane-bar">
-          <div class="theme-switch" role="group" aria-label="Slide theme" id="theme-switch"></div>
+          <p class="hint">Click any slide text to edit it. Text shrinks automatically to fit.</p>
           <button type="button" id="download-zip" class="btn btn-secondary">Download all as ZIP</button>
         </div>
-        <p class="hint">Click any slide text to edit it. Text shrinks automatically to fit.</p>
         <div id="slides" class="slides"></div>
+      </div>
+
+      <div id="pane-video" role="tabpanel" aria-labelledby="tab-video" class="pane" hidden>
+        <p class="hint">Turns your slides (with any edits and the theme chosen above) into an MP4 you can upload straight to Instagram or LinkedIn. It is made on your computer and has no sound.</p>
+        <div class="pane-bar">
+          <div class="field">
+            <label for="video-format">Video shape</label>
+            <select id="video-format"></select>
+          </div>
+          <button type="button" id="make-video" class="btn btn-primary">Create video</button>
+        </div>
+        <div id="video-progress" class="progress" hidden>
+          <progress id="video-bar" max="100" value="0" aria-label="Video progress"></progress>
+          <span id="video-pct" class="count">0%</span>
+        </div>
+        <p id="video-msg" class="hint" role="status" aria-live="polite"></p>
+        <div id="video-result" class="video-result" hidden>
+          <video id="video-player" controls playsinline loop></video>
+          <button type="button" id="download-video" class="btn btn-primary">Download MP4</button>
+        </div>
       </div>
 
       <div id="pane-caption" role="tabpanel" aria-labelledby="tab-caption" class="pane" hidden>
@@ -120,6 +145,7 @@
 
   <script src="vendor/html-to-image.js"></script>
   <script src="vendor/jszip.min.js"></script>
+  <script src="vendor/mp4-muxer.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
