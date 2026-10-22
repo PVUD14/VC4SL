@@ -10,6 +10,36 @@ A free, open-source personal project. Type or paste a rambling idea and get:
 
 Nothing is ever posted automatically. You review, edit and copy everything yourself.
 
+## Screenshots
+
+**1. Connect an AI.** Bring your own key from any provider. Keys stay in your browser, and a bar at the bottom counts tokens per key.
+
+![API keys screen](docs/screenshots/01-api-keys.png)
+
+**2. Dump your idea.** Messy is fine. Pick a goal and an audience.
+
+![Idea screen](docs/screenshots/02-idea.png)
+
+**3. Edit and copy the LinkedIn post.**
+
+![LinkedIn post](docs/screenshots/03-linkedin-post.png)
+
+**4. Instagram carousel.** Three themes, editable text that fits itself, PNG per slide or one ZIP.
+
+![Carousel](docs/screenshots/04-carousel.png)
+
+The three slide themes, exported straight from the app (1080x1350):
+
+<p>
+  <img src="docs/screenshots/slide-dark-editorial.png" alt="Dark editorial slide" width="32%">
+  <img src="docs/screenshots/slide-light-minimal.png" alt="Light minimal slide" width="32%">
+  <img src="docs/screenshots/slide-bold-contrast.png" alt="Bold contrast slide" width="32%">
+</p>
+
+**5. Download a video.** An MP4 made in your browser, as a Reel or Story (9:16) or a feed video (4:5).
+
+![Video export](docs/screenshots/05-video.png)
+
 ## Run it
 
 It is a static site. No build step, no database, no backend.
