@@ -56,7 +56,6 @@ body {
   background: linear-gradient(var(--paper), var(--paper)) 0 0 / 100% 3px no-repeat, linear-gradient(var(--paper), var(--paper)) 0 5px / 66% 3px no-repeat;
 }
 .brand-name { display: block; font: 700 24px/1 var(--serif); letter-spacing: 0.04em; }
-.brand-sub { display: block; font: 12px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); margin-top: 4px; }
 .top-actions { display: flex; gap: 22px; }
 .navlink { font: 600 15px var(--sans); color: var(--ink); background: none; border: 0; padding: 8px 0; cursor: pointer; border-bottom: 2px solid transparent; }
 .navlink:hover, .navlink[aria-current="page"] { border-bottom-color: var(--accent); }
@@ -265,8 +264,7 @@ dialog::backdrop { background: rgba(20, 18, 15, 0.6); }
 @media (max-width: 620px) {
   .masthead-inner { padding: 14px 16px; flex-wrap: wrap; }
   .screen { padding: 28px 16px 16px; }
-  .brand-sub { display: none; }
-  .composer, .key-card-main { padding: 20px; box-shadow: 5px 5px 0 var(--ink); }
+    .composer, .key-card-main { padding: 20px; box-shadow: 5px 5px 0 var(--ink); }
   .studio { padding: 20px 16px 28px; border-radius: 16px; }
   .key-row { grid-template-columns: auto minmax(0, 1fr); }
   .key-actions { grid-column: 1 / -1; justify-content: flex-start; }
