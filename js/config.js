@@ -95,13 +95,10 @@ export const KEY_CATEGORIES = [
   {
     id: "writing",
     title: "Writing AI",
-    provider: "Google Gemini",
     needsKey: true,
     usedFor: "Turns your rough idea into the LinkedIn post, the slide text and the caption. This is the only step that calls an AI service.",
     notUsed: "Not used for PNG slides or MP4 videos. Those are made on your own computer.",
-    multiKeyNote: "Add more than one key and the app switches to the next key when one hits its free limit.",
-    getKeyUrl: "https://aistudio.google.com/apikey",
-    getKeyText: "Get a free Gemini key at aistudio.google.com",
+    multiKeyNote: "Pick any provider from the list below and add your own key. Add several keys, even from different providers. They are tried from top to bottom, and the app moves to the next when one hits a limit.",
   },
   {
     id: "voice",
@@ -116,5 +113,80 @@ export const KEY_CATEGORIES = [
     needsKey: false,
     usedFor: "Drawn and encoded inside your browser, using your own computer.",
     notUsed: "No key needed and no cost.",
+  },
+];
+
+// [21] AI PROVIDERS people can choose from on the API keys screen. Each person uses their OWN key.
+//      id: short internal name (do not change). label: name shown on screen.
+//      kind: how the app talks to it. "gemini", "openai" (the common format also used by Groq,
+//            OpenRouter and local servers) or "anthropic".
+//      baseUrl: the service address. defaultModel: used when the key's Model box is left empty.
+//      keyRequired: false means no key is needed (a program on your own computer).
+//      cost: a short honest note shown on screen. keyUrl: where to get a key.
+//      Model names change often. If a provider says a model is not found, put a current name in the
+//      Model box on the API keys screen, or change defaultModel here.
+//      To add a provider that is not listed, add its web address to the connect-src part of the
+//      Content-Security-Policy in index.html, or the browser will block the request.
+export const PROVIDERS = [
+  {
+    id: "gemini",
+    label: "Google Gemini",
+    kind: "gemini",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/models/",
+    defaultModel: MODEL_NAME, // [21a] Uses the model name from setting [1].
+    keyRequired: true,
+    cost: "Free tier available",
+    keyUrl: "https://aistudio.google.com/apikey",
+  },
+  {
+    id: "groq",
+    label: "Groq",
+    kind: "openai",
+    baseUrl: "https://api.groq.com/openai/v1",
+    defaultModel: "openai/gpt-oss-20b",
+    keyRequired: true,
+    cost: "Free tier available",
+    keyUrl: "https://console.groq.com/keys",
+  },
+  {
+    id: "openrouter",
+    label: "OpenRouter",
+    kind: "openai",
+    baseUrl: "https://openrouter.ai/api/v1",
+    defaultModel: "openrouter/free", // [21b] A router that picks a free model for you.
+    keyRequired: true,
+    cost: "Has free models, others are paid",
+    keyUrl: "https://openrouter.ai/keys",
+  },
+  {
+    id: "openai",
+    label: "OpenAI",
+    kind: "openai",
+    baseUrl: "https://api.openai.com/v1",
+    defaultModel: "gpt-6-luna",
+    keyRequired: true,
+    cost: "Paid. Billed to your account",
+    keyUrl: "https://platform.openai.com/api-keys",
+  },
+  {
+    id: "anthropic",
+    label: "Anthropic Claude",
+    kind: "anthropic",
+    baseUrl: "https://api.anthropic.com/v1",
+    defaultModel: "claude-haiku-5-5",
+    keyRequired: true,
+    cost: "Paid. Billed to your account",
+    keyUrl: "https://console.anthropic.com/settings/keys",
+  },
+  {
+    id: "local",
+    label: "Local server (Ollama, LM Studio)",
+    kind: "openai",
+    baseUrl: "http://localhost:11434/v1", // [21c] Ollama's usual address. LM Studio usually uses port 1234.
+    defaultModel: "",
+    keyRequired: false,
+    askBaseUrl: true, // [21d] Shows an "Address" box so you can change the port.
+    cost: "Free. Runs on your computer and needs a downloaded model",
+    keyUrl: "https://ollama.com/download",
   },
 ];

@@ -181,3 +181,8 @@ dialog h2 { margin: 0 0 12px; }
   .usage-list { flex-basis: 100%; order: 3; }
   body { padding-bottom: 130px; }
 }
+
+/* [9] Provider picker. */
+.key-form select { width: 100%; }
+.provider-about:empty { display: none; }
+.key-actions .btn:disabled { opacity: 0.35; cursor: default; }

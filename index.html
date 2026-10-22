@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- [1] Security: only this site's own files may run, and the only outside address allowed is Google's Gemini API. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src blob:; connect-src 'self' https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <!-- [1] Security: only this site's own files may run. The only outside addresses allowed are the AI providers listed in config.js setting [21], plus a program on your own computer (localhost). To add another provider, add its address to connect-src. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src blob:; connect-src 'self' https://generativelanguage.googleapis.com https://api.groq.com https://openrouter.ai https://api.openai.com https://api.anthropic.com http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
   <title>VC4SL Content Engine</title>
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/slides.css">

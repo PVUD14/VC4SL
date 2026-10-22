@@ -33,19 +33,34 @@ It needs a recent Chrome or Edge (Safari should work too), opened from `http://l
 
 For 9:16 Reels the text keeps clear of Instagram's own buttons at the top and bottom.
 
-## API keys: what they are for
+## API keys: bring your own, from the provider you prefer
 
 The first screen is an **API keys** dashboard. Each card explains what that part of the app does and whether it needs a key.
 
 | Category | Needs a key? | What it does |
 |---|---|---|
-| Writing AI (Google Gemini) | Yes | Turns your idea into the LinkedIn post, slide text and caption. The only step that calls an AI service. |
+| Writing AI | Yes, from any provider below | Turns your idea into the LinkedIn post, slide text and caption. The only step that calls an AI service. |
 | Voice interviewer (Phase 2) | No | Not built yet. Will use the browser's own speech features. |
 | Slides, PNG and video | No | Made on your own computer. |
 
-Get a free Gemini key at <https://aistudio.google.com/apikey>, then add it on the dashboard. You can add **several keys** to one category. They are tried in order, and if one hits its free limit or is rejected, the app moves to the next and tells you.
+### Choose your Writing AI provider
 
-Use **Test** next to a key to check it works. Use **API keys** in the header to come back to this screen at any time. Categories and their wording are listed in `js/config.js`, setting [20].
+| Provider | Cost | Default model | Where to get a key |
+|---|---|---|---|
+| Google Gemini | Free tier | `gemini-3.5-flash-lite` | <https://aistudio.google.com/apikey> |
+| Groq | Free tier | `openai/gpt-oss-20b` | <https://console.groq.com/keys> |
+| OpenRouter | Has free models | `openrouter/free` | <https://openrouter.ai/keys> |
+| OpenAI | Paid, billed to you | `gpt-6-luna` | <https://platform.openai.com/api-keys> |
+| Anthropic Claude | Paid, billed to you | `claude-haiku-5-5` | <https://console.anthropic.com/settings/keys> |
+| Local server (Ollama, LM Studio) | Free, runs on your computer | none, you type the model you installed | <https://ollama.com/download> |
+
+Pick a provider, paste your key, and optionally type a model name. Model names change often. If a provider says a model is unknown, put a current name in the Model box.
+
+You can add **several keys, even from different providers**. They are tried from top to bottom, and if one hits a limit, runs out of credit or is rejected, the app moves to the next and tells you. Use the up and down arrows to change the order. Use **Test** to check a key works. Use **API keys** in the header to return to this screen at any time.
+
+**Local server:** run Ollama or LM Studio, download a model, and add it with the address of the server (default `http://localhost:11434/v1`). No key is needed. Ollama must allow browser access, for example by setting the `OLLAMA_ORIGINS` environment variable to the address you open this app from. Only `localhost` addresses are accepted.
+
+**Adding another provider:** add an entry to the providers list in `js/config.js` (setting [21]) and add its web address to `connect-src` in the Content-Security-Policy in `index.html`. Any service that follows the common "openai" chat format will work with `kind: "openai"`.
 
 ### Token counter
 
@@ -64,7 +79,7 @@ Keys are kept in your browser's localStorage only. They are sent to Google in a 
 |---|---|
 | `index.html` | The page and the Content-Security-Policy |
 | `js/config.js` | All editable settings |
-| `js/llm.js` | The single gateway to the AI (plus demo mode) |
+| `js/llm.js` | The single gateway to every AI provider (plus demo mode) |
 | `js/prompts.js` | Builds the instructions sent to the AI |
 | `js/render.js` | Slide building, text fitting, PNG and ZIP export |
 | `js/storage.js` | Safe localStorage wrapper |
@@ -81,8 +96,8 @@ To add another AI provider later (Groq, OpenRouter, and so on), add a function i
 
 ## Privacy
 
-- The text you type is sent to Google's Gemini API to generate content.
-- On the free tier, Google may use submitted data under its own terms. Read them before you paste anything.
+- The text you type is sent to the provider you choose (Google, Groq, OpenRouter, OpenAI or Anthropic) to generate content. With a local server it stays on your computer.
+- Free tiers may let the provider use submitted data under its own terms. Read the terms of the provider you pick before you paste anything.
 - Do not paste confidential or employer-sensitive material: unreleased vulnerability details, client data, internal incidents.
 - Your API keys, token counts and voice samples stay in your browser's localStorage. They are never part of this repository.
 - Phase 2 (voice) will use the browser's speech recognition, which sends audio to the browser vendor (for example Google for Chrome).
@@ -94,7 +109,7 @@ You are responsible for reviewing everything before you post it, especially anyt
 ## Security notes
 
 - Model output is untrusted. It is rendered with `textContent` only, never as HTML.
-- A strict Content-Security-Policy allows only this site's own files and the Gemini API host. There is no `eval` and there are no inline event handlers.
+- A strict Content-Security-Policy allows only this site's own files, the listed AI providers, and `localhost`. There is no `eval` and there are no inline event handlers.
 - Never commit your key. `.gitignore` already excludes `.env*`, `*.key`, `node_modules` and `samples/*.txt`.
 
 ## License
